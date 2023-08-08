@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
-
+const arabic = require('./arabic')
 // Load environment variables from .env file
 dotenv.config();
 
@@ -29,9 +29,7 @@ bot.onText(/\/start/, (msg) => {
     const options = {
         reply_markup: {
             keyboard: [
-                ['Option 1', 'Option 2'],
-                ['Option 3', 'Option 4'],
-                ['Help', 'Exit'],
+                [arabic.unit1.mainTitle]
             ],
             resize_keyboard: true,
             one_time_keyboard: true,
