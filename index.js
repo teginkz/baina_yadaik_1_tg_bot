@@ -21,13 +21,53 @@ const webhookUrl = 'https://9976-178-91-115-127.ngrok-free.app/tgwebhook'; // Re
 bot.setWebHook(webhookUrl);
 
 // Handle incoming messages
+// ... Import necessary modules and set up bot ...
+
+bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+
+    const options = {
+        reply_markup: {
+            keyboard: [
+                ['Option 1', 'Option 2'],
+                ['Option 3', 'Option 4'],
+                ['Help', 'Exit'],
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true,
+        },
+    };
+
+    bot.sendMessage(chatId, 'Welcome to the menu!', options);
+});
+
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
-    // Your custom logic to handle messages
-    // For example, you can send a reply:
-    bot.sendMessage(chatId, `You said: ${text}`);
+    switch (text) {
+        case 'Option 1':
+            bot.sendMessage(chatId, 'You selected Option 1');
+            break;
+        case 'Option 2':
+            bot.sendMessage(chatId, 'You selected Option 2');
+            break;
+        case 'Option 3':
+            bot.sendMessage(chatId, 'You selected Option 3');
+            break;
+        case 'Option 4':
+            bot.sendMessage(chatId, 'You selected Option 4');
+            break;
+        case 'Help':
+            bot.sendMessage(chatId, 'This is the help message.');
+            break;
+        case 'Exit':
+            bot.sendMessage(chatId, 'Goodbye!', { reply_markup: { remove_keyboard: true } });
+            break;
+        default:
+            bot.sendMessage(chatId, 'I do not understand your choice.');
+            break;
+    }
 });
 
 // Start the Express server for handling the webhook
