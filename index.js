@@ -47,7 +47,17 @@ bot.on('message', (msg) => {
 
     switch (text) {
         case 'Option 1':
-            bot.sendMessage(chatId, 'You selected Option 1');
+            // Send a text message
+            bot.sendMessage(chatId, 'You selected Option 1. Here is your audio:');
+
+            // Send an audio file (MP3)
+            bot.sendAudio(chatId, __dirname + '/audios/01.mp3')
+                .then(() => {
+                    console.log('Audio sent successfully');
+                })
+                .catch((error) => {
+                    console.error('Error sending audio:', error);
+                });
             break;
         case 'Option 2':
             bot.sendMessage(chatId, 'You selected Option 2');
@@ -60,9 +70,6 @@ bot.on('message', (msg) => {
             break;
         case 'Help':
             bot.sendMessage(chatId, 'This is the help message.');
-            break;
-        case 'Exit':
-            bot.sendMessage(chatId, 'Goodbye!', { reply_markup: { remove_keyboard: true } });
             break;
         default:
             bot.sendMessage(chatId, 'I do not understand your choice.');
