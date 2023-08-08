@@ -20,60 +20,161 @@ const bot = new TelegramBot(token, { polling: false });
 const webhookUrl = 'https://9976-178-91-115-127.ngrok-free.app/tgwebhook'; // Replace with your actual webhook URL
 bot.setWebHook(webhookUrl);
 
-// Handle incoming messages
-// ... Import necessary modules and set up bot ...
+// Define states for multi-level menu
+const MENU_STATES = {
+    MAIN_MENU: 'main_menu',
+
+    UNIT_1: 'unit_1',
+    UNIT_1_TASK_1: 'unit_1_task_1',
+
+    UNIT_2: 'unit_2',
+    UNIT_2_TASK_1: 'unit_2_task_1',
+
+};
+
+const userState = new Map();
 
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
 
-    const options = {
-        reply_markup: {
-            keyboard: [
-                [arabic.unit1.mainTitle]
-            ],
-            resize_keyboard: true,
-            one_time_keyboard: true,
-        },
-    };
+    userState.set(chatId, MENU_STATES.MAIN_MENU);
 
-    bot.sendMessage(chatId, 'Welcome to the menu!', options);
+    sendMainMenu(chatId);
+});
+
+bot.onText(/back/, (msg) => {
+    const chatId = msg.chat.id;
+
+    const currentState = userState.get(chatId);
+
+    switch (currentState) {
+        case MENU_STATES.UNIT_1:
+        case MENU_STATES.UNIT_1_TASK_1:
+            userState.set(chatId, MENU_STATES.MAIN_MENU);
+            sendMainMenu(chatId);
+            break;
+        default:
+            // Handle other cases if needed
+            break;
+    }
 });
 
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
+    const currentState = userState.get(chatId);
 
-    switch (text) {
-        case 'Option 1':
-            // Send a text message
-            bot.sendMessage(chatId, 'You selected Option 1. Here is your audio:');
-
-            // Send an audio file (MP3)
-            bot.sendAudio(chatId, __dirname + '/audios/01.mp3')
-                .then(() => {
-                    console.log('Audio sent successfully');
-                })
-                .catch((error) => {
-                    console.error('Error sending audio:', error);
-                });
+    switch (currentState) {
+        case MENU_STATES.MAIN_MENU:
+            handleMainMenu(chatId, text);
             break;
-        case 'Option 2':
-            bot.sendMessage(chatId, 'You selected Option 2');
+        case MENU_STATES.UNIT_1:
+            handleUnit1Menu(chatId, text);
             break;
-        case 'Option 3':
-            bot.sendMessage(chatId, 'You selected Option 3');
+        case MENU_STATES.UNIT_1_TASK_1:
+            handleUnit1Task1(chatId, text);
             break;
-        case 'Option 4':
-            bot.sendMessage(chatId, 'You selected Option 4');
-            break;
-        case 'Help':
-            bot.sendMessage(chatId, 'This is the help message.');
+        case MENU_STATES.UNIT_1_TASK_2:
+            handleUnit1Task2(chatId, text);
             break;
         default:
-            bot.sendMessage(chatId, 'I do not understand your choice.');
+            // Handle other cases if needed
             break;
     }
 });
+
+
+function sendMainMenu(chatId) {
+    bot.sendMessage(chatId, "Main menu", {
+        reply_markup: {
+            keyboard: [[arabic.unit1.mainTitle], [arabic.unit2.mainTitle]],
+            resize_keyboard: true,
+        },
+    });
+}
+
+function handleMainMenu(chatId, text) {
+    switch (text) {
+        case arabic.unit1.mainTitle:
+            userState.set(chatId, MENU_STATES.UNIT_1);
+            sendUnit1Menu(chatId);
+            break;
+        case arabic.unit2.mainTitle:
+            userState.set(chatId, MENU_STATES.UNIT_1);
+            sendUnit2Menu(chatId);
+            break;
+        default:
+            // Handle other main menu options if needed
+            break;
+    }
+}
+
+function sendUnit1Menu(chatId) {
+    bot.sendMessage(chatId, 'Unit 1 Menu', {
+        reply_markup: {
+            keyboard: [[arabic.unit1.task1, arabic.unit1.task2],
+            ['back']],
+            resize_keyboard: true,
+        },
+    });
+}
+
+function handleUnit1Menu(chatId, text) {
+    switch (text) {
+        case 'Task 1':
+            userState.set(chatId, MENU_STATES.UNIT_1_TASK_1);
+            sendTask1(chatId);
+            break;
+        case 'back':
+            userState.set(chatId, MENU_STATES.MAIN_MENU);
+            sendMainMenu(chatId);
+            break;
+        default:
+            // Handle other unit 1 menu options if needed
+            break;
+    }
+}
+
+function sendTask1(chatId) {
+    bot.sendMessage(chatId, 'Task 1 Content', {
+        reply_markup: {
+            keyboard: [['back']],
+            resize_keyboard: true,
+        },
+    });
+    // Send an audio file (MP3)
+    // bot.sendAudio(chatId, __dirname + '/audios/01.mp3')
+    //     .then(() => {
+    //         console.log('Audio sent successfully');
+    //     })
+    //     .catch((error) => {
+    //         console.error('Error sending audio:', error);
+    //     });
+
+}
+
+function handleUnit1Task1(chatId, text) {
+    switch (text) {
+        case 'back':
+            userState.set(chatId, MENU_STATES.UNIT_1);
+            sendUnit1Menu(chatId);
+            break;
+        default:
+            // Handle other task 1 options if needed
+            break;
+    }
+}
+function handleUnit1Task2(chatId, text) {
+    switch (text) {
+        case 'back':
+            userState.set(chatId, MENU_STATES.UNIT_1);
+            sendUnit1Menu(chatId);
+            break;
+        default:
+            // Handle other task 1 options if needed
+            break;
+    }
+}
 
 // Start the Express server for handling the webhook
 const express = require('express');
