@@ -17,7 +17,11 @@ if (!token) {
 const bot = new TelegramBot(token, { polling: false });
 
 // Set up the webhook
-const webhookUrl = 'https://9976-178-91-115-127.ngrok-free.app/tgwebhook'; // Replace with your actual webhook URL
+const webhookUrl = process.env.WEBHOOK_URL; // Replace with your actual webhook URL
+if (!webhookUrl) {
+    console.error("WEBHOOK_URL is missing in the environment variables.");
+    process.exit(1);
+}
 bot.setWebHook(webhookUrl);
 
 // Define states for multi-level menu
