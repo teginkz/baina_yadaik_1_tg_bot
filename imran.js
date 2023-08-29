@@ -2,6 +2,8 @@ const TelegramBot = require('node-telegram-bot-api');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const english = require("./english")
+const mongoose = require('mongoose');
+
 dotenv.config();
 
 const token = process.env.BOT_TOKEN;
@@ -57,7 +59,6 @@ bot.onText(/\/back/, (msg) => {
         case MENU_STATES.UNIT_2_TASK_1:
         case MENU_STATES.UNIT_2_TASK_2:
             userState.set(chatId, MENU_STATES.UNIT_2);
-            sendUnit2Menu(chatId); 
             break;
         default:
             break;
@@ -96,10 +97,38 @@ bot.on('message', (msg) => {
     }
 });
 
+function handleStateTransition(chatId) {
+    const currentState = userState.get(chatId);
+
+    switch (currentState) {
+        case MENU_STATES.UNIT_1:
+            sendUnit1Menu(chatId);
+            break;
+        case MENU_STATES.UNIT_1_TASK_1:
+            sendUnit1Task1(chatId);
+            break;
+        case MENU_STATES.UNIT_1_TASK_2:
+            sendUnit1Task2(chatId);
+            break;
+        case MENU_STATES.UNIT_2:
+            sendUnit2Menu(chatId);
+            break;
+        case MENU_STATES.UNIT_2_TASK_1:
+            sendUnit2Task1(chatId);
+            break;
+        case MENU_STATES.UNIT_2_TASK_2:
+            sendUnit2Task2(chatId);
+            break;
+        default:
+            sendMainMenu(chatId);
+            break;
+    }
+}
+
 function sendMainMenu(chatId) {
     bot.sendMessage(chatId, "Main menu", {
         reply_markup: {
-            keyboard: [[english.unit1.mainTitle], [english.unit2.mainTitle]],
+            keyboard: [[english.unit1.mainTitle], [english.unit2.mainTitle]],           
             resize_keyboard: true,
         },
     });
@@ -134,7 +163,7 @@ function handleUnit1Menu(chatId, text) {
     switch (text) {
         case english.unit1.task1:
             userState.set(chatId, MENU_STATES.UNIT_1_TASK_1);
-            sendTask1(chatId);
+            sendUnit1Task1(chatId);
             break;
         case english.unit1.task2:
             userState.set(chatId, MENU_STATES.UNIT_1_TASK_2);
@@ -149,7 +178,8 @@ function handleUnit1Menu(chatId, text) {
     }
 }
 
-function sendTask1(chatId) {
+
+function sendUnit1Task1(chatId) {
     const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
     const replyMarkup = {
         keyboard: keyboardOptions,
@@ -157,6 +187,18 @@ function sendTask1(chatId) {
     };
 
     bot.sendMessage(chatId, 'Unit 1 - Task 1 Content', {
+        reply_markup: replyMarkup,
+    });
+}
+
+function sendUnit1Task2(chatId) {
+    const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
+    const replyMarkup = {
+        keyboard: keyboardOptions,
+        resize_keyboard: true,
+    };
+
+    bot.sendMessage(chatId, 'Unit 1 - Task 2 Content', {
         reply_markup: replyMarkup,
     });
 }
@@ -188,11 +230,25 @@ function handleUnit1Task1(chatId, text) {
     }
 }
 
-
 function handleUnit1Task2(chatId, text) {
-    bot.sendMessage(chatId, "Unit 1 - Task 2 Content");
     switch (text) {
-        case 'back':
+        case 'Text':
+            bot.sendMessage(chatId, 'Text example!');
+            break;
+        case 'Audio':
+            bot.sendMessage(chatId, 'Audio example!');
+            bot.sendAudio(chatId, __dirname + '/audios/02.mp3')
+                .then(() => {
+                    console.log('Audio sent successfully');
+                })
+                .catch((error) => {
+                    console.error('Error sending audio:', error);
+                });
+            break;
+        case 'Exam':
+            bot.sendMessage(chatId, 'Exam example!');
+            break;
+        case 'Back':
             userState.set(chatId, MENU_STATES.UNIT_1);
             sendUnit1Menu(chatId);
             break;
@@ -210,13 +266,39 @@ function sendUnit2Menu(chatId) {
     });
 }
 
+function sendUnit2Task1(chatId) {
+    const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
+    const replyMarkup = {
+        keyboard: keyboardOptions,
+        resize_keyboard: true,
+    };
+
+    bot.sendMessage(chatId, 'Unit 2 - Task 1 Content', {
+        reply_markup: replyMarkup,
+    });
+}
+
+function sendUnit2Task2(chatId) {
+    const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
+    const replyMarkup = {
+        keyboard: keyboardOptions,
+        resize_keyboard: true,
+    };
+
+    bot.sendMessage(chatId, 'Unit 2 - Task 2 Content', {
+        reply_markup: replyMarkup,
+    });
+}
+
 function handleUnit2Menu(chatId, text) {
     switch (text) {
         case english.unit2.task1:
             userState.set(chatId, MENU_STATES.UNIT_2_TASK_1);
+            sendUnit2Task1(chatId);
             break;
         case english.unit2.task2:
             userState.set(chatId, MENU_STATES.UNIT_2_TASK_2);
+            sendUnit2Task2(chatId);
             break;
         case 'back':
             userState.set(chatId, MENU_STATES.MAIN_MENU);
@@ -227,18 +309,25 @@ function handleUnit2Menu(chatId, text) {
     }
 }
 
-function sendTask2(chatId, unit) {
-    bot.sendMessage(chatId, `Task 2 Content for ${unit}`, {
-        reply_markup: {
-            keyboard: [['back']],
-            resize_keyboard: true,
-        },
-    });
-}
-
 function handleUnit2Task1(chatId, text) {
     switch (text) {
-        case 'back':
+        case 'Text':
+            bot.sendMessage(chatId, 'Unit 2 Task 1 Text');
+            break;
+        case 'Audio':
+            bot.sendMessage(chatId, 'Unit 2 Task 1 Audio');
+            bot.sendAudio(chatId, __dirname + '/audios/03.mp3')
+                .then(() => {
+                    console.log('Audio sent successfully');
+                })
+                .catch((error) => {
+                    console.error('Error sending audio:', error);
+                });
+            break;
+        case 'Exam':
+            bot.sendMessage(chatId, 'Unit 2 Task 1 Exam');
+            break;
+        case 'Back':
             userState.set(chatId, MENU_STATES.UNIT_2);
             sendUnit2Menu(chatId);
             break;
@@ -249,14 +338,30 @@ function handleUnit2Task1(chatId, text) {
 
 function handleUnit2Task2(chatId, text) {
     switch (text) {
-        case 'back':
+        case 'Text':
+            bot.sendMessage(chatId, 'Unit 2 Task 2 Text');
+            break;
+        case 'Audio':
+            bot.sendMessage(chatId, 'Unit 2 Task 2 Audio');
+            bot.sendAudio(chatId, __dirname + '/audios/04.mp3')
+                .then(() => {
+                    console.log('Audio sent successfully');
+                })
+                .catch((error) => {
+                    console.error('Error sending audio:', error);
+                });
+            break;
+        case 'Exam':
+            bot.sendMessage(chatId, 'Unit 2 Task 2 Exam');
+            break;
+        case 'Back':
             userState.set(chatId, MENU_STATES.UNIT_2);
             sendUnit2Menu(chatId);
             break;
         default:
             break;
     }
-}
+};
 
 const express = require('express');
 const app = express();
@@ -267,6 +372,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/tgwebhook', (req, res) => {
     console.log('Received webhook request:', req.body);
+    const update = req.body;
     bot.processUpdate(req.body);
     res.sendStatus(200);
 });
@@ -274,5 +380,5 @@ app.post('/tgwebhook', (req, res) => {
 app.get('/ping', (req, res) => res.send('pong'));
 
 app.listen(port, () => {
-    console.log(`Server is listening on port ${port}`); 
+    console.log(`Web server is listening on port ${port}`);
 });

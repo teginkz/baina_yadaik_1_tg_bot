@@ -6,7 +6,8 @@
   "scripts": {
     "imran": "node imran.js",
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db":"node mongotest.js"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,11 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "mongodb": "^6.0.0",
+    "mongoose": "^7.4.5",
     "node-telegram-bot-api": "^0.61.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
