@@ -4,6 +4,8 @@
   "description": "A series in teaching Arabic to non-native speakers.The second version of First Student's Book.part One",
   "main": "index.js",
   "scripts": {
+    "app": "node app.js",
+    "delete": "node delete.js",
     "imran": "node imran.js",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
