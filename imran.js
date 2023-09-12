@@ -122,18 +122,18 @@ bot.on('message', async (msg) => {
             case MENU_STATES.MAIN_MENU:
                 handleMainMenu(chatId, userMsg);
                 break;
-                case MENU_STATES.UNIT_1:
-                    handleUnit1Menu(chatId, userMsg);
-                    break;
+            case MENU_STATES.UNIT_1:
+                handleUnit1Menu(chatId, userMsg);
+                break;
             case MENU_STATES.UNIT_1_TASK_1:
                 handleUnit1Task1(chatId, userMsg);
                 break;
             case MENU_STATES.UNIT_1_TASK_2:
                 handleUnit1Task2(chatId, userMsg);
                 break;
-                case MENU_STATES.UNIT_2:
-                    handleUnit2Menu(chatId, userMsg);
-                    break;
+            case MENU_STATES.UNIT_2:
+                handleUnit2Menu(chatId, userMsg);
+                break;
             case MENU_STATES.UNIT_2_TASK_1:
                 handleUnit2Task1(chatId, userMsg);
                 break;
@@ -143,15 +143,49 @@ bot.on('message', async (msg) => {
             default:
                 break;
         }
-        await handleStateTransition(chatId, currentState);
+
+        await handleStateTransition(chatId, currentState, userMsg);
     } catch (error) {
         console.error('Error handling user message:', error);
     }
 });
 
-async function handleStateTransition(chatId, currentState) {
+async function handleStateTransition(chatId, currentState, userMsg) {
     try {
+        let nextState = currentState;
+
         switch (currentState) {
+            case MENU_STATES.MAIN_MENU:
+                if (userMsg.toLowerCase() === "unit 1") {
+                    nextState = MENU_STATES.UNIT_1;
+                } else if (userMsg.toLowerCase() === "unit 2") {
+                    nextState = MENU_STATES.UNIT_2;
+                }
+                break;
+            case MENU_STATES.UNIT_1:
+                if (userMsg.toLowerCase() === "unit 1 task 1") {
+                    nextState = MENU_STATES.UNIT_1_TASK_1;
+                } else if (userMsg.toLowerCase() === "unit 1 task 2") {
+                    nextState = MENU_STATES.UNIT_1_TASK_2;
+                }
+                break;
+            case MENU_STATES.UNIT_2:
+                if (userMsg.toLowerCase() === "unit 2 task 1") {
+                    nextState = MENU_STATES.UNIT_2_TASK_1;
+                } else if (userMsg.toLowerCase() === "unit 2 task 2") {
+                    nextState = MENU_STATES.UNIT_2_TASK_2;
+                }
+                break;
+            default:
+                break;
+        }
+
+        await User.findOneAndUpdate({ chatId }, { state: nextState });
+
+        switch (nextState) {
+            case MENU_STATES.MAIN_MENU:
+                sendMainMenu(chatId);
+                break;
             case MENU_STATES.UNIT_1:
                 sendUnit1Menu(chatId);
                 break;
@@ -171,10 +205,8 @@ async function handleStateTransition(chatId, currentState) {
                 sendUnit2Task2(chatId);
                 break;
             default:
-                sendMainMenu(chatId);
                 break;
         }
-        await User.findOneAndUpdate({ chatId }, { state: currentState });
     } catch (error) {
         console.error('Error handling state transition:', error);
     }
