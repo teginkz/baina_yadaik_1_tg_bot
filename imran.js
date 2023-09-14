@@ -62,11 +62,12 @@ bot.onText(/\/start/, async (msg) => {
         const existingUser = await User.findOne({ chatId });
 
         if (existingUser) {
-            await existingUser.remove();
+            await User.updateOne({ chatId }, { state: newState });
+        } else {
+            const newUser = new User({ chatId, state: newState });
+            await newUser.save();
         }
 
-        const newUser = new User({ chatId, state: newState });
-        await newUser.save();
         sendMainMenu(chatId);
     } catch (error) {
         console.error('Error handling /start:', error);
@@ -89,17 +90,22 @@ bot.onText(/\/back/, async (msg) => {
     }
     const currentState = usr.state;
 
-    console.log('Received "back" command.');
-
     switch (currentState) {
         case MENU_STATES.UNIT_1_TASK_1:
+            User.findOne(chatId, MENU_STATES.UNIT_1);
+            sendUnit1Menu(chatId);
+            break;
         case MENU_STATES.UNIT_1_TASK_2:
             User.findOne(chatId, MENU_STATES.UNIT_1);
             sendUnit1Menu(chatId);
             break;
         case MENU_STATES.UNIT_2_TASK_1:
+            User.findOne(chatId, MENU_STATES.UNIT_2);
+            sendUnit2Menu(chatId)
+            break;
         case MENU_STATES.UNIT_2_TASK_2:
             User.findOne(chatId, MENU_STATES.UNIT_2);
+            sendUnit2Menu(chatId)
             break;
         default:
             break;
