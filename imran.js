@@ -68,49 +68,44 @@ bot.onText(/\/start/, async (msg) => {
             await newUser.save();
         }
 
-        sendMainMenu(chatId);
+        await sendMainMenu(chatId);
     } catch (error) {
         console.error('Error handling /start:', error);
     }
 });
 
-  
-
 bot.onText(/\/back/, async (msg) => {
     const chatId = msg.chat.id;
-    let usr;
-    try {
-        usr = await User.findOne({ chatId });
-        if (!usr) {
-            usr = new User({ chatId, state: MENU_STATES.MAIN_MENU });
-            await usr.save();
-        }
-    } catch (error) {
-        console.error('Error finding/creating user:', error);
-    }
-    const currentState = usr.state;
 
-    switch (currentState) {
-        case MENU_STATES.UNIT_1_TASK_1:
-            User.findOne(chatId, MENU_STATES.UNIT_1);
-            sendUnit1Menu(chatId);
-            break;
-        case MENU_STATES.UNIT_1_TASK_2:
-            User.findOne(chatId, MENU_STATES.UNIT_1);
-            sendUnit1Menu(chatId);
-            break;
-        case MENU_STATES.UNIT_2_TASK_1:
-            User.findOne(chatId, MENU_STATES.UNIT_2);
-            sendUnit2Menu(chatId)
-            break;
-        case MENU_STATES.UNIT_2_TASK_2:
-            User.findOne(chatId, MENU_STATES.UNIT_2);
-            sendUnit2Menu(chatId)
-            break;
-        default:
-            break;
+    try {
+        const usr = await User.findOne({ chatId });
+        if (!usr) {
+            await User.create({ chatId, state: MENU_STATES.MAIN_MENU });
+        }
+
+        const currentState = usr.state;
+
+        let nextState = MENU_STATES.MAIN_MENU;
+
+        switch (currentState) {
+            case MENU_STATES.UNIT_1_TASK_1:
+            case MENU_STATES.UNIT_1_TASK_2:
+                nextState = MENU_STATES.UNIT_1;
+                break;
+            case MENU_STATES.UNIT_2_TASK_1:
+            case MENU_STATES.UNIT_2_TASK_2:
+                nextState = MENU_STATES.UNIT_2;
+                break;
+            default:
+                break;
+        }
+
+        await User.findOneAndUpdate({ chatId }, { state: nextState });
+        await handleStateTransition(chatId, nextState);
+    } catch (error) {
+        console.error('Error handnling /back:', error);
     }
-});
+}); 
 
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -212,31 +207,39 @@ async function handleStateTransition(chatId, currentState, userMsg) {
                 break;
             default:
                 break;
-        }
+            }
     } catch (error) {
         console.error('Error handling state transition:', error);
     }
 }
 
-function sendMainMenu(chatId) {
-    bot.sendMessage(chatId, "Main menu", {
-        reply_markup: {
-            keyboard: [[english.unit1.mainTitle], [english.unit2.mainTitle]],           
-            resize_keyboard: true,
-        },
-    });
+async function sendMainMenu(chatId) {
+    try {
+        const user = await User.findOne({ chatId });
+        if (user.state !== MENU_STATES.MAIN_MENU) {
+            return;
+        }
+
+        bot.sendMessage(chatId, "Main menu", {
+            reply_markup: {
+                keyboard: [[english.unit1.mainTitle], [english.unit2.mainTitle]],
+                resize_keyboard: true,
+            },
+        });
+    } catch (error) {
+        console.error('Error sending main menu:', error);
+    }
 }
+
 
 async function handleMainMenu(chatId, text) {
     try {
         switch (text) {
             case english.unit1.mainTitle:
                 await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
-                sendUnit1Menu(chatId);
                 break;
             case english.unit2.mainTitle:
                 await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2 });
-                sendUnit2Menu(chatId);
                 break;
             default:
                 break;
@@ -247,62 +250,87 @@ async function handleMainMenu(chatId, text) {
 }
 
 
-function sendUnit1Menu(chatId) {
-    bot.sendMessage(chatId, 'Unit 1 Menu', {
-        reply_markup: {
-            keyboard: [[english.unit1.task1, english.unit1.task2],
-            ['back']],
-            resize_keyboard: true,
-        },  
-    });
+async function sendUnit1Menu(chatId) {
+    try {
+        const user = await User.findOne({ chatId });
+        if (user.state !== MENU_STATES.UNIT_1) {
+            return;
+        }
+
+        bot.sendMessage(chatId, 'Unit 1 Menu', {
+            reply_markup: {
+                keyboard: [[english.unit1.task1, english.unit1.task2], ['back']],
+                resize_keyboard: true,
+            },
+        });
+    } catch (error) {
+        console.error('Error sending unit 1 menu:', error);
+    }
 }
 
-async function handleUnit1Menu(chatId, text) {
+async function handleUnit1Menu(chatId, text, currentState) {
     switch (text) {
         case english.unit1.task1:
-            User.findOne(chatId, MENU_STATES.UNIT_1_TASK_1);
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1_TASK_1 });
             sendUnit1Task1(chatId);
             break;
         case english.unit1.task2:
-            User.findOne(chatId, MENU_STATES.UNIT_1_TASK_2);
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1_TASK_2 });
             sendUnit1Task2(chatId);
             break;
         case 'back':
-            User.findOne(chatId, MENU_STATES.MAIN_MENU);
+            await User.findOneAndUpdate({ chatId }, { state: currentState });
             sendMainMenu(chatId);
             break;
         default:
             break;
     }
-    await handleStateTransition(chatId);
 }
 
 
-function sendUnit1Task1(chatId) {
-    const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
-    const replyMarkup = {
-        keyboard: keyboardOptions,
-        resize_keyboard: true,
-    };
+async function sendUnit1Task1(chatId) {
+    try {
+        const user = await User.findOne({ chatId });
+        if (user.state !== MENU_STATES.UNIT_1_TASK_1) {
+            return;
+        }
 
-    bot.sendMessage(chatId, 'Unit 1 - Task 1 Content', {
-        reply_markup: replyMarkup,
-    });
+        const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
+        const replyMarkup = {
+            keyboard: keyboardOptions,
+            resize_keyboard: true,
+        };
+
+        bot.sendMessage(chatId, 'Unit 1 - Task 1 Content', {
+            reply_markup: replyMarkup,
+        });
+    } catch (error) {
+        console.error('Error sending unit 1 task 1:', error);
+    }
 }
 
-function sendUnit1Task2(chatId) {
-    const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
-    const replyMarkup = {
-        keyboard: keyboardOptions,
-        resize_keyboard: true,
-    };
+async function sendUnit1Task2(chatId) {
+    try {
+        const user = await User.findOne({ chatId });
+        if (user.state !== MENU_STATES.UNIT_1_TASK_2) {
+            return;
+        }
 
-    bot.sendMessage(chatId, 'Unit 1 - Task 2 Content', {
-        reply_markup: replyMarkup,
-    });
+        const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
+        const replyMarkup = {
+            keyboard: keyboardOptions,
+            resize_keyboard: true,
+        };
+
+        bot.sendMessage(chatId, 'Unit 1 - Task 2 Content', {
+            reply_markup: replyMarkup,
+        });
+    } catch (error) {
+        console.error('Error sending unit 1 task 2:', error);
+    }
 }
 
-function handleUnit1Task1(chatId, text) {
+async function handleUnit1Task1(chatId, text) {
     switch (text) {
         case 'Text':
             bot.sendMessage(chatId, 'You chose: text');
@@ -321,7 +349,7 @@ function handleUnit1Task1(chatId, text) {
             bot.sendMessage(chatId, 'You chose: exam');
             break;
         case 'Back':
-            User.findOne(chatId, MENU_STATES.UNIT_1);
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
             sendUnit1Menu(chatId);
             break;
         default:
@@ -329,7 +357,7 @@ function handleUnit1Task1(chatId, text) {
     }
 }
 
-function handleUnit1Task2(chatId, text) {
+async function handleUnit1Task2(chatId, text) {
     switch (text) {
         case 'Text':
             bot.sendMessage(chatId, 'Text example!');
@@ -348,74 +376,101 @@ function handleUnit1Task2(chatId, text) {
             bot.sendMessage(chatId, 'Exam example!');
             break;
         case 'Back':
-            User.findOne(chatId, MENU_STATES.UNIT_1);
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
             sendUnit1Menu(chatId);
             break;
         default:
             break;
     }
-};
+}
 
-function sendUnit2Menu(chatId) {
-    bot.sendMessage(chatId, 'Unit 2 Menu', {
-        reply_markup: {
-            keyboard: [[english.unit2.task1, english.unit2.task2], ['back']],
+async function sendUnit2Menu(chatId) {
+    try {
+        const user = await User.findOne({ chatId });
+        if (user.state !== MENU_STATES.UNIT_2) {
+            return;
+        }
+
+        bot.sendMessage(chatId, 'Unit 2 Menu', {
+            reply_markup: {
+                keyboard: [[english.unit2.task1, english.unit2.task2], ['back']],
+                resize_keyboard: true,
+            },
+        });
+    } catch (error) {
+        console.error('Error sending unit 2 menu:', error);
+    }
+}
+
+async function sendUnit2Task1(chatId) {
+    try {
+        const user = await User.findOne({ chatId });
+        if (user.state !== MENU_STATES.UNIT_2_TASK_1) {
+            return;
+        }
+
+        const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
+        const replyMarkup = {
+            keyboard: keyboardOptions,
             resize_keyboard: true,
-        },
-    });
+        };
+
+        bot.sendMessage(chatId, 'Unit 2 - Task 1 Content', {
+            reply_markup: replyMarkup,
+        });
+    } catch (error) {
+        console.error('Error sending unit 2 task 1:', error);
+    }
 }
 
-function sendUnit2Task1(chatId) {
-    const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
-    const replyMarkup = {
-        keyboard: keyboardOptions,
-        resize_keyboard: true,
-    };
+async function sendUnit2Task2(chatId) {
+    try {
+        const user = await User.findOne({ chatId });
+        if (user.state !== MENU_STATES.UNIT_2_TASK_2) {
+            return;
+        }
 
-    bot.sendMessage(chatId, 'Unit 2 - Task 1 Content', {
-        reply_markup: replyMarkup,
-    });
+        const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
+        const replyMarkup = {
+            keyboard: keyboardOptions,
+            resize_keyboard: true,
+        };
+
+        bot.sendMessage(chatId, 'Unit 2 - Task 2 Content', {
+            reply_markup: replyMarkup,
+        });
+    } catch (error) {
+        console.error('Error sending unit 2 task 2:', error);
+    }
 }
 
-function sendUnit2Task2(chatId) {
-    const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
-    const replyMarkup = {
-        keyboard: keyboardOptions,
-        resize_keyboard: true,
-    };
-
-    bot.sendMessage(chatId, 'Unit 2 - Task 2 Content', {
-        reply_markup: replyMarkup,
-    });
-}
-
-async function handleUnit2Menu(chatId, text) {
+async function handleUnit2Menu(chatId, text, currentState) {
     switch (text) {
         case english.unit2.task1:
-            User.findOne(chatId, MENU_STATES.UNIT_2_TASK_1);
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2_TASK_1 });
             sendUnit2Task1(chatId);
             break;
         case english.unit2.task2:
-            User.findOne(chatId, MENU_STATES.UNIT_2_TASK_2);
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2_TASK_2 });
             sendUnit2Task2(chatId);
             break;
         case 'back':
-            User.findOne(chatId, MENU_STATES.MAIN_MENU);
+            await User.findOneAndUpdate({ chatId }, { state: currentState });
             sendMainMenu(chatId);
             break;
         default:
             break;
     }
-    await handleStateTransition(chatId);
 }
 
-function handleUnit2Task1(chatId, text) {
+
+async function handleUnit2Task1(chatId, text) {
     switch (text) {
         case 'Text':
-            bot.sendMessage(chatId, 'Unit 2 Task 1 Text');
+            bot.sendMessage(chatId, 'You chose: text');
             break;
         case 'Audio':
-            bot.sendMessage(chatId, 'Unit 2 Task 1 Audio');
+            bot.sendMessage(chatId, 'You chose: audio');
             bot.sendAudio(chatId, __dirname + '/audios/03.mp3')
                 .then(() => {
                     console.log('Audio sent successfully');
@@ -425,10 +480,10 @@ function handleUnit2Task1(chatId, text) {
                 });
             break;
         case 'Exam':
-            bot.sendMessage(chatId, 'Unit 2 Task 1 Exam');
+            bot.sendMessage(chatId, 'You chose: exam');
             break;
         case 'Back':
-            User.findOne(chatId, MENU_STATES.UNIT_2);
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
             sendUnit2Menu(chatId);
             break;
         default:
@@ -436,13 +491,13 @@ function handleUnit2Task1(chatId, text) {
     }
 }
 
-function handleUnit2Task2(chatId, text) {
+async function handleUnit2Task2(chatId, text) {
     switch (text) {
         case 'Text':
-            bot.sendMessage(chatId, 'Unit 2 Task 2 Text');
+            bot.sendMessage(chatId, 'Text example!');
             break;
         case 'Audio':
-            bot.sendMessage(chatId, 'Unit 2 Task 2 Audio');
+            bot.sendMessage(chatId, 'Audio example!');
             bot.sendAudio(chatId, __dirname + '/audios/04.mp3')
                 .then(() => {
                     console.log('Audio sent successfully');
@@ -452,16 +507,16 @@ function handleUnit2Task2(chatId, text) {
                 });
             break;
         case 'Exam':
-            bot.sendMessage(chatId, 'Unit 2 Task 2 Exam');
+            bot.sendMessage(chatId, 'Exam example!');
             break;
         case 'Back':
-            User.findOne(chatId, MENU_STATES.UNIT_2);
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
             sendUnit2Menu(chatId);
             break;
         default:
             break;
     }
-};
+}
 
 const app = express();
 const port = 3000;
