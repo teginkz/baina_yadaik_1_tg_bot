@@ -3,6 +3,12 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const english = require('./english');
 const express = require('express');
+const mongoose = require('mongoose');
+const User = require('./Schemas/User')
+mongoose.connect('mongodb://127.0.0.1:27017/telegramBot', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true, 
+});
 
 dotenv.config();
 
