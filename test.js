@@ -34,30 +34,73 @@ const MENU_STATES = {
     UNIT_2_TASK_2: 'unit_2_task_2',
 };
 
-const userState = new Map();
+// const userState = new Map();
 
-bot.onText(/\/start/, (msg) => {
-    const chatId = msg.chat.id;
+bot.onText(/\/start/, async (msg) => {
+  const chatId = msg.chat.id;
 
-    userState.set(chatId, MENU_STATES.MAIN_MENU);
+  try {
+    const user = await User.findOne({ chatId });
+
+    if (!user) {
+      const newUser = new User({
+        chatId,
+        state: MENU_STATES.MAIN_MENU,
+      });
+      await newUser.save();
+    } else {
+      user.state = MENU_STATES.MAIN_MENU;
+      await user.save();
+    }
 
     sendMainMenu(chatId);
+  } catch (error) {
+    console.error('Error handling /start:', error);
+  }
 });
 
-bot.onText(/back/, (msg) => {
+bot.onText(/back/, async (msg) => {
     const chatId = msg.chat.id;
 
-    const currentState = userState.get(chatId);
+    try {
+        const usr = await User.findOne({ chatId });
+        if (!usr) {
+            await User.create({ chatId, state: MENU_STATES.MAIN_MENU });
+        }
 
-    switch (currentState) {
-        case MENU_STATES.UNIT_1:
-        case MENU_STATES.UNIT_1_TASK_1:
-            userState.set(chatId, MENU_STATES.MAIN_MENU);
-            sendMainMenu(chatId);
-            break;
-        default:
-            break;
-    }
+        const currentState = usr.state;
+
+        switch (currentState) {
+            case MENU_STATES.UNIT_1:
+                usr.state = MENU_STATES.MAIN_MENU;
+                sendMainMenu(chatId);
+                break;
+            case MENU_STATES.UNIT_1_TASK_1:
+                usr.state = MENU_STATES.UNIT_1;
+                sendUnit1Menu(chatId);
+                break;
+            case MENU_STATES.UNIT_1_TASK_2:
+                usr.state = MENU_STATES.UNIT_1;
+                sendUnit1Menu(chatId);
+                break;
+            case MENU_STATES.UNIT_2:
+                usr.state = MENU_STATES.MAIN_MENU;
+                sendMainMenu(chatId);
+                break;
+            case MENU_STATES.UNIT_2_TASK_1:
+                usr.state = MENU_STATES.UNIT_2;
+                sendUnit2Menu(chatId);
+                break;
+            case MENU_STATES.UNIT_2_TASK_2:
+                usr.state = MENU_STATES.UNIT_2;
+                sendUnit2Menu(chatId);
+                break;
+            default:
+                break;
+        };
+    } catch (error) {
+        console.error('Error handnling /back:', error);
+    };
 });
 
 bot.on('message', (msg) => {
