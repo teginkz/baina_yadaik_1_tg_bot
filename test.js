@@ -147,9 +147,10 @@ bot.on('message', async (msg) => {
 
 async function sendMainMenu(chatId) {
     try {
-        const user = await User.findOne({ chatId });
-        if (user.state !== MENU_STATES.MAIN_MENU) {
-            return;
+        let user = await User.findOne({ chatId });
+        if (!user) {
+            user = new User({ chatId, state: MENU_STATES.MAIN_MENU });
+            await user.save();
         }
 
         bot.sendMessage(chatId, "Main menu", {
@@ -184,7 +185,11 @@ async function handleMainMenu(chatId, text) {
 
 async function sendUnit1Menu(chatId) {
     try {
-        const user = await User.findOne({ chatId });
+        let user = await User.findOne({ chatId });
+        if (!user) {
+            user = new User({ chatId, state: MENU_STATES.UNIT_1 });
+            await user.save();
+        }
 
         bot.sendMessage(chatId, 'Unit 1 Menu', {
             reply_markup: {
@@ -197,7 +202,7 @@ async function sendUnit1Menu(chatId) {
     }
 }
 
-async function handleUnit1Menu(chatId, text, currentState) {
+async function handleUnit1Menu(chatId, text) {
     switch (text) {
         case english.unit1.task1:
             await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1_TASK_1 });
@@ -260,9 +265,10 @@ async function sendUnit1Task2(chatId) {
 
 async function sendUnit2Menu(chatId) {
     try {
-        const user = await User.findOne({ chatId });
-        if (user.state !== MENU_STATES.UNIT_2) {
-            return;
+        let user = await User.findOne({ chatId });
+        if (!user) {
+            user = new User({ chatId, state: MENU_STATES.UNIT_2 });
+            await user.save();
         }
 
         bot.sendMessage(chatId, 'Unit 2 Menu', {
@@ -276,7 +282,7 @@ async function sendUnit2Menu(chatId) {
     }
 }
 
-async function handleUnit2Menu(chatId, text, currentState) {
+async function handleUnit2Menu(chatId, text,) {
     switch (text) {
         case english.unit2.task1:
             await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2_TASK_1 });
@@ -297,9 +303,10 @@ async function handleUnit2Menu(chatId, text, currentState) {
 
 async function sendUnit2Task1(chatId) {
     try {
-        const user = await User.findOne({ chatId });
-        if (user.state !== MENU_STATES.UNIT_2_TASK_1) {
-            return;
+        let user = await User.findOne({ chatId });
+        if (!user) {
+            user = new User({ chatId, state: MENU_STATES.UNIT_2_TASK_1 });
+            await user.save();
         }
 
         const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
@@ -318,9 +325,10 @@ async function sendUnit2Task1(chatId) {
 
 async function sendUnit2Task2(chatId) {
     try {
-        const user = await User.findOne({ chatId });
-        if (user.state !== MENU_STATES.UNIT_2_TASK_2) {
-            return;
+        let user = await User.findOne({ chatId });
+        if (!user) {
+            user = new User({ chatId, state: MENU_STATES.UNIT_2_TASK_2 });
+            await user.save();
         }
 
         const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
