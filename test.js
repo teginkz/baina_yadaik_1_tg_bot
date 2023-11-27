@@ -38,7 +38,7 @@ const MENU_STATES = {
 
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
-
+    console.log('наш чат айди', chatId);
   try {
     const user = await User.findOne({ chatId });
 
@@ -61,6 +61,7 @@ bot.onText(/\/start/, async (msg) => {
 
 bot.onText(/back/, async (msg) => {
     const chatId = msg.chat.id;
+    console.log('наш чат айди', chatId);
 
     try {
         const usr = await User.findOne({ chatId });
@@ -105,6 +106,8 @@ bot.onText(/back/, async (msg) => {
 
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
+    console.log('наш чат айди', chatId);
+
     let usr;
     try {
         usr = await User.findOne({ chatId });
@@ -183,25 +186,6 @@ async function handleMainMenu(chatId, text) {
     }
 }
 
-async function sendUnit1Menu(chatId) {
-    try {
-        let user = await User.findOne({ chatId });
-        if (!user) {
-            user = new User({ chatId, state: MENU_STATES.UNIT_1 });
-            await user.save();
-        }
-
-        bot.sendMessage(chatId, 'Unit 1 Menu', {
-            reply_markup: {
-                keyboard: [[english.unit1.task1, english.unit1.task2], ['back']],
-                resize_keyboard: true,
-            },
-        });
-    } catch (error) {
-        console.error('Error sending unit 1 menu:', error);
-    }
-}
-
 async function handleUnit1Menu(chatId, text) {
     switch (text) {
         case english.unit1.task1:
@@ -221,32 +205,34 @@ async function handleUnit1Menu(chatId, text) {
     }
 }
 
-async function sendUnit1Task1(chatId) {
+async function sendUnit1Menu(chatId) {
     try {
-        const user = await User.findOne({ chatId });
-        if (user.state !== MENU_STATES.UNIT_1_TASK_1) {
-            return;
+        console.log('Chat ID:', chatId);
+
+        let user = await User.findOne({ chatId });
+        if (!user) {
+            user = new User({ chatId, state: MENU_STATES.UNIT_1 });
+            await user.save();
         }
 
-        const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
-        const replyMarkup = {
-            keyboard: keyboardOptions,
-            resize_keyboard: true,
-        };
-
-        bot.sendMessage(chatId, 'Unit 1 - Task 1 Content', {
-            reply_markup: replyMarkup,
+        bot.sendMessage(chatId, 'Unit 1 Menu', {
+            reply_markup: {
+                keyboard: [[english.unit1.task1, english.unit1.task2], ['back']],
+                resize_keyboard: true,
+            },
         });
     } catch (error) {
-        console.error('Error sending unit 1 task 1:', error);
+        console.error('Error sending unit 1 menu:', error);
     }
 }
 
+
 async function sendUnit1Task2(chatId) {
     try {
-        const user = await User.findOne({ chatId });
-        if (user.state !== MENU_STATES.UNIT_1_TASK_2) {
-            return;
+        let user = await User.findOne({ chatId });
+        if (!user) {
+            user = new User({ chatId, state: MENU_STATES.UNIT_1_TASK_2 });
+            await user.save();
         }
 
         const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
@@ -265,6 +251,8 @@ async function sendUnit1Task2(chatId) {
 
 async function sendUnit2Menu(chatId) {
     try {
+        console.log('Chat ID:', chatId);
+
         let user = await User.findOne({ chatId });
         if (!user) {
             user = new User({ chatId, state: MENU_STATES.UNIT_2 });
@@ -280,7 +268,7 @@ async function sendUnit2Menu(chatId) {
     } catch (error) {
         console.error('Error sending unit 2 menu:', error);
     }
-}
+};
 
 async function handleUnit2Menu(chatId, text,) {
     switch (text) {
