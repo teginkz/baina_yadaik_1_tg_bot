@@ -455,7 +455,7 @@ async function handleUnit2Task2(chatId, text) {
             bot.sendMessage(chatId, 'Exam example!');
             break;
         case 'Back':
-            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2 });
             sendUnit2Menu(chatId);
             break;
         default:
