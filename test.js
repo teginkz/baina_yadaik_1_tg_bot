@@ -172,11 +172,11 @@ async function handleMainMenu(chatId, text) {
         switch (text) {
             case english.unit1.mainTitle:
                 await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
-                sendUnit1Menu();
+                sendUnit1Menu(chatId);
                 break;
             case english.unit2.mainTitle:
                 await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2 });
-                sendUnit2Menu();
+                sendUnit2Menu(chatId);
                 break;
             default:
                 break;
@@ -226,6 +226,28 @@ async function sendUnit1Menu(chatId) {
     }
 }
 
+
+async function sendUnit1Task1(chatId) {
+    try {
+        let user = await User.findOne({ chatId });
+        if (!user) {
+            user = new User({ chatId, state: MENU_STATES.UNIT_1_TASK_1 });
+            await user.save();
+        }
+
+        const keyboardOptions = [['Text', 'Audio'], ['Exam', 'Back']];
+        const replyMarkup = {
+            keyboard: keyboardOptions,
+            resize_keyboard: true,
+        };
+
+        bot.sendMessage(chatId, 'Unit 1 - Task 1 Content', {
+            reply_markup: replyMarkup,
+        });
+    } catch (error) {
+        console.error('Error sending unit 1 task 1:', error);
+    }
+}
 
 async function sendUnit1Task2(chatId) {
     try {
