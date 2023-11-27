@@ -292,7 +292,7 @@ async function sendUnit2Menu(chatId) {
     }
 };
 
-async function handleUnit2Menu(chatId, text,) {
+async function handleUnit2Menu(chatId, text) {
     switch (text) {
         case english.unit2.task1:
             await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2_TASK_1 });
