@@ -358,11 +358,11 @@ async function sendUnit2Task2(chatId) {
 async function handleUnit1Task1(chatId, text) {
     switch (text) {
         case 'Text':
-            bot.sendMessage(chatId, 'You chose: text');
+            bot.sendMessage(chatId, 'Text sent successfully!');
             break;
         case 'Audio':
-            bot.sendMessage(chatId, 'You chose: audio');
-            bot.sendAudio(chatId, __dirname + '/audios/01.mp3')
+            bot.sendMessage(chatId, 'Audio sent successfully!');
+            bot.sendAudio(chatId, __dirname + '/baina_yadaik_2/Book1/1/01.mp3')
                 .then(() => {
                     console.log('Audio sent successfully');
                 })
@@ -371,7 +371,7 @@ async function handleUnit1Task1(chatId, text) {
                 });
             break;
         case 'Exam':
-            bot.sendMessage(chatId, 'You chose: exam');
+            bot.sendMessage(chatId, 'Exam sent successfully!');
             break;
         case 'Back':
             await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
@@ -385,11 +385,11 @@ async function handleUnit1Task1(chatId, text) {
 async function handleUnit1Task2(chatId, text) {
     switch (text) {
         case 'Text':
-            bot.sendMessage(chatId, 'Text example!');
+            bot.sendMessage(chatId, 'Text sent successfully!');
             break;
         case 'Audio':
-            bot.sendMessage(chatId, 'Audio example!');
-            bot.sendAudio(chatId, __dirname + '/audios/02.mp3')
+            bot.sendMessage(chatId, 'Audio sent successfully!');
+            bot.sendAudio(chatId, __dirname + '/baina_yadaik_2/Book1/1/02.mp3')
                 .then(() => {
                     console.log('Audio sent successfully');
                 })
@@ -398,7 +398,7 @@ async function handleUnit1Task2(chatId, text) {
                 });
             break;
         case 'Exam':
-            bot.sendMessage(chatId, 'Exam example!');
+            bot.sendMessage(chatId, 'Exam sent successfully!');
             break;
         case 'Back':
             await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
@@ -412,11 +412,11 @@ async function handleUnit1Task2(chatId, text) {
 async function handleUnit2Task1(chatId, text) {
     switch (text) {
         case 'Text':
-            bot.sendMessage(chatId, 'You chose: text');
+            bot.sendMessage(chatId, 'Text sent successfully!');
             break;
         case 'Audio':
-            bot.sendMessage(chatId, 'You chose: audio');
-            bot.sendAudio(chatId, __dirname + '/audios/03.mp3')
+            bot.sendMessage(chatId, 'Audio sent successfully!');
+            bot.sendAudio(chatId, __dirname + '/baina_yadaik_2/Book1/1/03.mp3')
                 .then(() => {
                     console.log('Audio sent successfully');
                 })
@@ -425,10 +425,10 @@ async function handleUnit2Task1(chatId, text) {
                 });
             break;
         case 'Exam':
-            bot.sendMessage(chatId, 'You chose: exam');
+            bot.sendMessage(chatId, 'Exam sent successfully!');
             break;
         case 'Back':
-            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_1 });
+            await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2 });
             sendUnit2Menu(chatId);
             break;
         default:
@@ -439,11 +439,11 @@ async function handleUnit2Task1(chatId, text) {
 async function handleUnit2Task2(chatId, text) {
     switch (text) {
         case 'Text':
-            bot.sendMessage(chatId, 'Text example!');
+            bot.sendMessage(chatId, 'Text sent successfully!');
             break;
         case 'Audio':
-            bot.sendMessage(chatId, 'Audio example!');
-            bot.sendAudio(chatId, __dirname + '/audios/04.mp3')
+            bot.sendMessage(chatId, 'Audio sent successfully!');
+            bot.sendAudio(chatId, __dirname + '/baina_yadaik_2/Book1/1/04.mp3')
                 .then(() => {
                     console.log('Audio sent successfully');
                 })
@@ -452,7 +452,7 @@ async function handleUnit2Task2(chatId, text) {
                 });
             break;
         case 'Exam':
-            bot.sendMessage(chatId, 'Exam example!');
+            bot.sendMessage(chatId, 'Exam sent successfully!');
             break;
         case 'Back':
             await User.findOneAndUpdate({ chatId }, { state: MENU_STATES.UNIT_2 });
